@@ -23,6 +23,14 @@
 
 
 %% Set up global variables
+spmpath = '/group/language/data/thomascope/spm12_fil_r7771/';
+thisspm = which('spm');
+if ~strcmp(thisspm(1:end-5), spmpath)
+    rmpath(genpath('/imaging/local/software/spm_cbu_svn/releases/spm12_latest/'));
+    addpath(spmpath)
+    spm eeg
+end
+
 addpath(pwd)
 pathstem = '/imaging/rowe/Noham_Tom_PSP_Action/preprocessed/';
 maxfilteredpathstem = '/imaging/rowe/users/nw03/PSP_BP/data/scans/allscans/';
@@ -145,12 +153,16 @@ end
 
 % Exclude the subject for whom no data found
 subjects(data_exist==0) = [];
+group(data_exist==0) = [];
+% Only subject 37 not fixable, so if running only from here then:
+% subjects(37) = []
+% group(37) = [];
 
 %Now denoise the data
 ICA_complete = zeros(size(subjects));
 parfor cnt = 1:size(subjects,2)
    try
-       PSP_Preprocessing_mainfunction('ICA_artifacts','convert',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt,dates,blocksin,blocksout,rawpathstem, badeeg, badchannels, runtodo)
+       PSP_Preprocessing_mainfunction('ICA_artifacts','convert',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt)
        ICA_complete(cnt) = 1
        disp(['ICA complete for ' subjects{cnt}]);
    catch
@@ -165,6 +177,10 @@ end
 % ADJUST to work. If this happens, then you can set the code to
 % automatically continue without touching the EEG using a try - catch
 % statement, or get it to omit EEG for specific subjects (example in the mainfunction) or try to fix it.
+
+% Note that ICA decomposition was successful for all subjects except
+% meg14_0176, where EEG was rank deficient - I only rejected artefacts for
+% their MEG signal.
 
 % pause
 
@@ -186,7 +202,7 @@ end
 
 parfor cnt = 1:size(subjects,2)
     %PSP_Preprocessing_mainfunction('definetrials','convert',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
-   PSP_Preprocessing_mainfunction('epoch','ICA_artifacts',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt,dates,blocksin,blocksout,rawpathstem, badeeg);
+   PSP_Preprocessing_mainfunction('epoch','ICA_artifacts',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('downsample','epoch',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);

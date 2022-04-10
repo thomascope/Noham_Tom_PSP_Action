@@ -1,4 +1,4 @@
-function SD_Preprocessing_mainfunction(step,prevStep,p,pathstem,maxfilteredpathstem, subjects,subjcnt,dates,blocksin,blocksout,rawpathstem,badeeg,badmeg,runtodo)
+function PSP_Preprocessing_mainfunction(step,prevStep,p,pathstem,maxfilteredpathstem, subjects,subjcnt,dates,blocksin,blocksout,rawpathstem,badeeg,badmeg,runtodo)
 
 switch prevStep
     % Here you specify the filenames that you search for after each step.
@@ -1452,7 +1452,7 @@ switch step
             chans = {}; remove = {}; weights = {}; temcor = {}; spacor = {}; TraMat = {};
             
             ICA.subj = subjects;
-            if strcmp(ICA.subj, 'meg14_0234_vc10'); %Because there are so many missing electrodes for this subject, ADJUST will fail and crash the parallel pool - add your own subjects here if necessary
+            if strcmp(ICA.subj, 'meg14_0176'); %Because there are so many missing electrodes for this subject, ADJUST will fail and crash the parallel pool - add your own subjects here if necessary
                 modalities = {'MEGMAG' 'MEGPLANAR'};
             end
             
