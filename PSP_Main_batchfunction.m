@@ -85,7 +85,7 @@ p.correctPlanar = 0; % whether to baseline correct planar gradiometer data after
 
 % for filtering 
 p.filter = 'low'; % type of filter (lowpass or highpass)- never bandpass!
-p.freq = 40; % filter cutoff (Hz)
+p.freq = 80; % filter cutoff (Hz)
 %p.filter = 'high'; % type of filter (lowpass or highpass)- never bandpass!
 %p.freq = 0.5; % filter cutoff (Hz)
 %p.filter = 'stop';
@@ -216,26 +216,26 @@ end
 parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('filter','baseline',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
-p.filestring_length = 4; %Specify that filenames are the first 4 unique letters and anything after this denotes a repeat (e.g. tray vs tray_1)
-p.blocksout = blocksout;
+p.filter = 'stop';
+p.freq = [48 52];
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('merge_recoded','filter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
-end
-p.conditions = postmerge_conditions;
-parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('sort','merge',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('filter','filter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('average','merge',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('sort','secondfilter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
+parfor cnt = 1:size(subjects,2)
+    PSP_Preprocessing_mainfunction('average','filter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+end
+%Filter again after robust averaging because of ringing artefact
 parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('filter','average',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2) 
-    PSP_Preprocessing_mainfunction('combineplanar','fmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('combineplanar','fmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 
-PSP_Preprocessing_mainfunction('grand_average','pfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects);
+PSP_Preprocessing_mainfunction('grand_average','pfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects);
 % This saves the grand unweighted average file for each group in the folder of the
 % first member of that group. For convenience, you might want to move them
 % to separate folders.
@@ -244,30 +244,30 @@ PSP_Preprocessing_mainfunction('grand_average','pfmcfbdeMr*.mat',p,pathstem, max
 hasallconditions = zeros(1,size(subjects,2));
 parfor cnt = 1:size(subjects,2)    
     try %Some participants didn't do all conditions, so can't be weighted with pre-specified contrasts.
-   PSP_Preprocessing_mainfunction('weight','pfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+   PSP_Preprocessing_mainfunction('weight','pfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
    hasallconditions(cnt) = 1;
     catch
     end
 end
 
-PSP_Preprocessing_mainfunction('grand_average','wpfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects(logical(hasallconditions)));
+PSP_Preprocessing_mainfunction('grand_average','wpfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects(logical(hasallconditions)));
 
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('combineplanar_spm','fmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('combineplanar_spm','fmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 p.mod = {'MEGMAG' 'MEGCOMB'};
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('image','PfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('image','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2)
     % The input for smoothing should be the same as the input used to make
     % the image files.
-    PSP_Preprocessing_mainfunction('smooth','PfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('smooth','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 for cnt = 1
     % The input for smoothing should be the same as the input used to make
     % the image files. Only need to do this for a single subject
-    PSP_Preprocessing_mainfunction('mask','PfmcfbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('mask','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end  
 % This saves the grand weighted average file for each group in the folder of the
 % first member of that group. For convenience, you might want to move them

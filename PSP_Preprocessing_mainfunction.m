@@ -498,7 +498,7 @@ switch step
                 % Now create Fieldtrip expected structure
                 trl = zeros(length(sti.trigs),3);
                 trl(:,1) = [sti.times*D.Fsample]+ceil(p.preEpoch/1000*D.Fsample);
-                trl(:,2) = [sti.times*D.Fsample]+ceil(p.preEpoch/1000*D.Fsample);
+                trl(:,2) = [sti.times*D.Fsample]+ceil(p.postEpoch/1000*D.Fsample);
                 trl(:,3) = 0 + ceil(p.preEpoch/1000*D.Fsample);
                 
                 trials.trl = trl;
