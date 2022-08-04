@@ -1,5 +1,5 @@
 patients = {
-    'meg14_0175'
+    %'meg14_0175' % Something wrong with the data - rank deficient
     'meg13_0133'
     'meg13_0270'
     'meg12_0458'
@@ -9,7 +9,7 @@ patients = {
     'meg14_0308'
     'meg14_0289'
     'meg15_0149'
-    'meg15_0105'
+    % 'meg15_0105' %Data quality issue - becomes all zeros
     'meg15_0069'
     'meg15_0208'
     'meg15_0522'
@@ -20,7 +20,7 @@ patients = {
     };
 
 patient_ages = [
-    65.83561644
+    %65.83561644
     70.50136986
     69.45479452
     70.18082192
@@ -30,7 +30,7 @@ patient_ages = [
     69.6739726
     68.03287671
     52.6
-    67.86849315
+    %67.86849315
     64.68493151
     72.16438356
     70.83287671
@@ -41,7 +41,7 @@ patient_ages = [
     ];
 
 patient_sex = [
-    1
+    %1
     1
     1
     1
@@ -51,7 +51,7 @@ patient_sex = [
     2
     2
     1
-    1
+    %1
     1
     2
     2
@@ -99,7 +99,7 @@ controls = {
     'meg16_0197'
     'meg16_0201'
     'meg16_0207'
-    'meg16_0210'
+    %'meg16_0210' % Missing data
     'meg16_0211'
     'meg16_0213'
     };

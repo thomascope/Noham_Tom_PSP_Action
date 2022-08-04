@@ -32,7 +32,8 @@ if ~strcmp(thisspm(1:end-5), spmpath)
 end
 
 addpath(pwd)
-pathstem = '/imaging/rowe/Noham_Tom_PSP_Action/preprocessed/';
+%pathstem = '/imaging/rowe/Noham_Tom_PSP_Action/preprocessed/';
+pathstem = '/imaging/rowe/Noham_Tom_PSP_Action/';
 maxfilteredpathstem = '/imaging/rowe/users/nw03/PSP_BP/data/scans/allscans/';
 conditions = {'Reaction_time' 'Voluntary_button' 'Reaction_time_cue'};
 
@@ -77,8 +78,8 @@ p.maxduration = 100000; % if using definetrials_jp, maximum duration of a trial 
 p.robust = 1;
 
 % for baseline correction
-p.preBase = -2100; % pre baseline time (ms)
-p.postBase = -2000; % post baseline time (ms)
+p.preBase = -2000; % pre baseline time (ms)
+p.postBase = -1900; % post baseline time (ms)
 
 % for combining planar gradiometer data
 p.correctPlanar = 0; % whether to baseline correct planar gradiometer data after RMSing (using baseline period specified in preBase and postBase)
@@ -154,7 +155,8 @@ end
 % Exclude the subject for whom no data found
 subjects(data_exist==0) = [];
 group(data_exist==0) = [];
-% Only subject 37 not fixable, so if running only from here then:
+% Only subject 37 not fixable, so if running only from here then: % Now
+% excluded in demographics file
 % subjects(37) = []
 % group(37) = [];
 
@@ -184,22 +186,6 @@ end
 
 % pause
 
-% This next bit is not yet fully parallelised (doesn't seem necessary
-% because it doesn't take so long), so re-open a smaller matlab pool with
-% one worker per subject to reduce occupation of the cluster
-
-memoryrequired = num2str(8*size(subjects,1));
-
-try
-    matlabpool 'close'
-    workerpool = cbupool(size(subjects,2));
-    workerpool.ResourceTemplate=['-l nodes=^N^,mem=' memoryrequired 'GB,walltime=48:00:00'];
-    matlabpool(workerpool)
-catch
-    fprintf([ '\n\nUnable to open up a cluster worker pool - opening a local cluster instead' ]);
-    matlabpool(12)
-end
-
 parfor cnt = 1:size(subjects,2)
     %PSP_Preprocessing_mainfunction('definetrials','convert',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
    PSP_Preprocessing_mainfunction('epoch','ICA_artifacts',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
@@ -213,8 +199,12 @@ end
 parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('baseline','downsample',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
+filter_complete = zeros(size(subjects)); % Sometimes failing here, why?
 parfor cnt = 1:size(subjects,2)
+    try
     PSP_Preprocessing_mainfunction('filter','baseline',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    filter_complete(cnt) = 1;
+    end
 end
 p.filter = 'stop';
 p.freq = [48 52];
@@ -225,17 +215,20 @@ parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('sort','secondfilter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('average','filter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('average','secondfilter',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 %Filter again after robust averaging because of ringing artefact
 parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('filter','average',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
+% parfor cnt = 1:size(subjects,2) 
+%     PSP_Preprocessing_mainfunction('rereference','fmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+% end
 parfor cnt = 1:size(subjects,2) 
-    PSP_Preprocessing_mainfunction('combineplanar','fmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('combineplanar','fmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 
-PSP_Preprocessing_mainfunction('grand_average','pfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects);
+PSP_Preprocessing_mainfunction('grand_cropandaverage','pfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects);
 % This saves the grand unweighted average file for each group in the folder of the
 % first member of that group. For convenience, you might want to move them
 % to separate folders.
@@ -243,31 +236,36 @@ PSP_Preprocessing_mainfunction('grand_average','pfmcffbdeMr*.mat',p,pathstem, ma
 
 hasallconditions = zeros(1,size(subjects,2));
 parfor cnt = 1:size(subjects,2)    
-    try %Some participants didn't do all conditions, so can't be weighted with pre-specified contrasts.
-   PSP_Preprocessing_mainfunction('weight','pfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    try %If some participants didn't do all conditions, they can't be weighted with pre-specified contrasts.
+   PSP_Preprocessing_mainfunction('weight','ppfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
    hasallconditions(cnt) = 1;
     catch
     end
 end
 
-PSP_Preprocessing_mainfunction('grand_average','wpfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects(logical(hasallconditions)));
+try
+    PSP_Preprocessing_mainfunction('grand_average','wppfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects(logical(hasallconditions)));
+catch
+    hasallconditions = ones(1,size(subjects,2)); % For this dataset all subjects have all conditions, in case this step is run on a different session from weighting
+    PSP_Preprocessing_mainfunction('grand_average','wppfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects(logical(hasallconditions)));
+end
 
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('combineplanar_spm','fmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('combineplanar_spm','fmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 p.mod = {'MEGMAG' 'MEGCOMB'};
 parfor cnt = 1:size(subjects,2)
-    PSP_Preprocessing_mainfunction('image','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('image','PfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 parfor cnt = 1:size(subjects,2)
     % The input for smoothing should be the same as the input used to make
     % the image files.
-    PSP_Preprocessing_mainfunction('smooth','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('smooth','PfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 for cnt = 1
     % The input for smoothing should be the same as the input used to make
     % the image files. Only need to do this for a single subject
-    PSP_Preprocessing_mainfunction('mask','PfmcffbdeMr*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
+    PSP_Preprocessing_mainfunction('mask','PfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end  
 % This saves the grand weighted average file for each group in the folder of the
 % first member of that group. For convenience, you might want to move them

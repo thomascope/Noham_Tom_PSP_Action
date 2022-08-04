@@ -194,7 +194,7 @@ switch step
         
         fprintf('\n\nTrials defined!\n\n');
         
-        case 'definetrials'
+    case 'definetrials'
         
         % parameters for SPM function
         fs = p.fs; % assumes maxfilter HASN'T downsampled data
@@ -349,8 +349,8 @@ switch step
         cfg.triggers = p.triggers;
         cfg.prestim = -p.preEpoch/1000; % jp's trigger function specifies times with positive numbers only
         cfg.poststim = p.postEpoch/1000;
-%         cfg.minduration = p.minduration/1000;
-%         cfg.maxduration = p.maxduration/1000;
+        %         cfg.minduration = p.minduration/1000;
+        %         cfg.maxduration = p.maxduration/1000;
         cfg.fromprevious = 0;
         
         % other parameters
@@ -396,13 +396,13 @@ switch step
                     error('this function is only set up to work with specific dataset for Karalyn Patterson - you need to define your own trials!')
                 end
                 [trials.trl, events] = jp_meg_gettrials(sti101_new, cfg);
-
+                
                 for c=1:length(cfg.triggers)
                     trials.labels([events.value]==cfg.triggers(c),1)=repmat(conditions(c),sum([events.value]==cfg.triggers(c)),1);
                     offset_trials.labels([events.value]==cfg.triggers(c),1)=repmat(conditions(length(cfg.triggers)+c),sum([events.value]==cfg.triggers(c)),1);
                 end
                 onset_trials = trials;
-
+                
                 for c = 1:length(trials.trl)
                     if events(c).value == 1
                         offset_trials.trl(c,:) = trials.trl(c,:) + ([310 310 0]/1000)*cfg.fs;
@@ -426,7 +426,7 @@ switch step
                 if isfield(p,'delay')
                     trials.trl(:,1:2) = trials.trl(:,1:2) + ceil((p.delay{subjcnt}/1000)*cfg.fs);
                 end
-                               
+                
                 % save to file
                 outfilePath = [S.outfilestem];
                 cd(outfilePath);
@@ -442,7 +442,7 @@ switch step
         fprintf('\n\nTrials defined!\n\n');
         
     case 'definetrials_noham' % uses modification of jp's trigger extraction function + includes ability to block out response triggers
-                     
+        
         % other parameters
         conditions = p.conditions;
         if isfield(p,'stimuli_list_fname')
@@ -469,7 +469,7 @@ switch step
             end
             
             % change to input directory
-                        
+            
             filePath = [pathstem subjects];
             cd(filePath);
             
@@ -480,7 +480,7 @@ switch step
                 
                 fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
                 
-                % main process - 
+                % main process -
                 
                 % First load the trigger codes Laura has already
                 % created in the 'tc' prefix files.
@@ -494,7 +494,7 @@ switch step
                 % Include only wanted triggers
                 sti.times=sti.times(any(sti.trigs'==p.triggers'));
                 sti.trigs=sti.trigs(any(sti.trigs'==p.triggers'));
-
+                
                 % Now create Fieldtrip expected structure
                 trl = zeros(length(sti.trigs),3);
                 trl(:,1) = [sti.times*D.Fsample]+ceil(p.preEpoch/1000*D.Fsample);
@@ -502,8 +502,8 @@ switch step
                 trl(:,3) = 0 + ceil(p.preEpoch/1000*D.Fsample);
                 
                 trials.trl = trl;
-               
-              % Now label the trials
+                
+                % Now label the trials
                 for c=1:length(conditions)
                     trials.labels(sti.trigs==p.triggers(c),1)=repmat(conditions(c),sum([sti.trigs]==p.triggers(c)),1);
                 end
@@ -1230,7 +1230,7 @@ switch step
             filePath = [pathstem subjects];
             cd(filePath);
             
-          
+            
             % search for input files
             files = dir(prevStep);
             %First merge together split runs into single runs
@@ -1290,14 +1290,14 @@ switch step
                     
                     % main process
                     spm_eeg_merge(S);
-
+                    
                     filetomove = dir('temp*.mat');
                     clear S
                     S.D = filetomove.name;
                     S.outfile = strrep(these_files(1).name,'_1','');
                     spm_eeg_copy(S)
                     new_files{i} = S.outfile;
-        
+                    
                     eval(['delete ' filetomove.name])
                     eval(['delete ' filetomove.name(1:end-4) '.dat'])
                     
@@ -1313,7 +1313,7 @@ switch step
             mergePrimary = repmat(' ',1,50); % this is to ensure that the first file in list has the sensor locations etc. (because otherwise that information won't be retained in merged file)
             mergeSecondary = repmat(' ',length(files)-1,50);
             count = 0;
-        
+            
             for f=1:length(files)
                 
                 fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
@@ -1365,7 +1365,7 @@ switch step
         end
         
         fprintf('\n\nData copied!\n\n');
-    
+        
     case 'ICA_artifacts'
         
         p.interpolatebadforICA = 0; % ZZZ HACK - I am not confident that the interpolation is working properly
@@ -1380,7 +1380,7 @@ switch step
         ICA.PCA_MEGdim = 60;                    % Number of PCs for ICA - for ADJUST routine, should be set to nEEG channels (70 in my dataset), but for maxfiltered MEG should not be more than 60
         if isfield(p,'interpolatebadforICA') && p.interpolatebadforICA == 1
             ICA.PCA_EEGdim = 50;                    % ADJUST suggests PCA dim as the same as number of channels, but I find this unstable when badchannels are interpolated, so would suggest reducing to 50 as below. I have modified ADJUST to accept this.
-        else            
+        else
             ICA.PCA_EEGdim = 70;                %NB: IF YOU CHANGE THIS YOU ALSO NEED TO CHANGE IT AGAIN BELOW
         end
         ICA.FiltPars_orig = [0.1 40];              % filter bandpass [1 40] %% [0.05 20];
@@ -1402,7 +1402,7 @@ switch step
         catch
             modalities = {'MEGMAG' 'MEGPLANAR' 'EEG'}; %with new ADJUST algorithm for EEG
         end
-            
+        
         % modalities = {'MEGMAG' 'MEGPLANAR' 'EEG'}; %with new ADJUST algorithm for EEG
         %modalities = {'MEGMAG' 'MEGPLANAR'}; % If just want to run Rik's templating, as there is no template file for EEG yet
         %modalities = {'EEG'}; %For piloting ADJUST only
@@ -1427,7 +1427,7 @@ switch step
         catch
             runstodo = length(filesdone)+1:length(files); %Assumes that file list is in the same order between runs!
         end
-
+        
         for f=runstodo
             % for debug
             %for f = 1
@@ -1452,9 +1452,9 @@ switch step
             chans = {}; remove = {}; weights = {}; temcor = {}; spacor = {}; TraMat = {};
             
             ICA.subj = subjects;
-            if strcmp(ICA.subj, 'meg14_0176'); %Because there are so many missing electrodes for this subject, ADJUST will fail and crash the parallel pool - add your own subjects here if necessary
-                modalities = {'MEGMAG' 'MEGPLANAR'};
-            end
+            %             if strcmp(ICA.subj, 'meg14_0176'); %Because there are so many missing electrodes for this subject, ADJUST will fail and crash the parallel pool - add your own subjects here if necessary
+            %                 modalities = {'MEGMAG' 'MEGPLANAR'};
+            %             end
             
             for m = 1:length(modalities)
                 if exist([pwd '/MEG_ICs_' num2str(m) '_' files(f).name])
@@ -1463,7 +1463,7 @@ switch step
                 elseif exist([pwd '/MEG_ICs_' m '_' files(f).name])
                     
                     m = m+1
-
+                    
                 end
                 if m > length(modalities)
                     if exist([pwd '/MEG_ICs_' num2str(m-1) '_' files(f).name])
@@ -1516,7 +1516,7 @@ switch step
                 if exist([pwd '/ICs_for_' files(f).name])
                     m = length(modalities) % Assumes that EEG is always listed last on the modalities list as per instructions!
                     if exist([pwd '/M' files(f).name]) && ~isfield(p, 'fixICA')
-%                     if 1==0 %If you don't want this to happen! E.g. if you want to change which components are rejected by ADJUST
+                        %                     if 1==0 %If you don't want this to happen! E.g. if you want to change which components are rejected by ADJUST
                         fprintf(['File ' num2str(f) ' previously ICA_artifacted for ' subjects '!\n\n'])
                         return %This can only happen if runtodo is defined, so this should be safe to not miss out any files.
                     elseif exist([pwd '/M' files(f).name]) && ~isfield(p, 'fixICA') && p.fixICA == 0
@@ -1548,7 +1548,7 @@ switch step
                         pathstem = pathstem_back; D=D_back; %Fix bug where preprocessed ICs are imported from another file
                         if isfield(p,'interpolatebadforICA') && p.interpolatebadforICA == 1
                             ICA.PCA_EEGdim = 50;                    % ADJUST suggests PCA dim as the same as number of channels, but I find this unstable when badchannels are interpolated, so would suggest reducing to 50 as below. I have modified ADJUST to accept this.
-                            D(chans{m}(nonzeros(tointerpolate)),:) = ICA.d(nonzeros(tointerpolate),:); %Ensure that bad channels to not contribute to the montage - time consuming step 
+                            D(chans{m}(nonzeros(tointerpolate)),:) = ICA.d(nonzeros(tointerpolate),:); %Ensure that bad channels to not contribute to the montage - time consuming step
                         else
                             ICA.PCA_EEGdim = 70;
                         end
@@ -1914,7 +1914,7 @@ switch step
             %files = dir(['m' prevStep]);    %Check if already done!
             donefiles = dir(['m' prevStep]);
             inprogress = spm_eeg_load(donefiles(1).name);
-           
+            
             if isempty(files) && strcmp(inprogress.conditions(1),'Undefined')
                 clear inprogress;
                 fprintf(['\n\nData not yet averaged for ' subjects ' - resuming!\n\n']);
@@ -1945,7 +1945,7 @@ switch step
         end % subjects
         
         fprintf('\n\nData averaged!\n\n');
-    
+        
     case 'fix_resumed_average' % fix a bug where nans introduced during resumed averaging of data (shouldn't happen any more)
         
         % parameters for SPM function
@@ -1973,7 +1973,7 @@ switch step
             donefiles = dir(['m' prevStep]);
             inprogress = spm_eeg_load(donefiles(1).name);
             firstzero = find(squeeze(inprogress(size(inprogress,1),size(inprogress,2),:,size(inprogress,4)))==0,1);
-           
+            
             if isempty(files) && ~isempty(firstzero)
                 clear inprogress;
                 fprintf(['\n\nData not yet averaged for ' subjects ' - resuming!\n\n']);
@@ -2008,10 +2008,10 @@ switch step
     case 'quickaverage' % average data
         
         % parameters for SPM function
-
+        
         S.robust = 0; % No robust averaging
         S.prefix = 'quick/m'; %Bug in spm_eeg_average_TF - crashes if this isn't defined.
-
+        
         S.circularise = 1; % gives phase locking value (PLV) when averaging phase values of TF data
         
         for s=1:size(subjects,1)
@@ -2125,7 +2125,7 @@ switch step
         
         fprintf('\n\nConditions sorted!\n\n');
         
-    case 'grand_average' % assumes merged files (i.e. one per subject)
+    case 'grand_average'
         
         addpath('/group/language/data/thomascope/vespa/SPM12version/Standalone preprocessing pipeline')
         % set input files for averaging
@@ -2143,6 +2143,97 @@ switch step
             files = dir(prevStep);
             
             fprintf([ '\n\nProcessing ' files.name '...\n\n' ]);
+            
+            if p.group(s) == 1
+                fprintf([ '\nIdentified as a control. \n' ]);
+                controls2average{end+1} = [filePath '/' files.name];
+                
+            elseif p.group(s) == 2
+                fprintf([ '\nIdentified as a patient. \n' ]);
+                patients2average{end+1} = [filePath '/' files.name];
+            end
+            
+        end
+        
+        parfor groups = 1:2
+            if groups == 1
+                
+                S = [];
+                % parameters for SPM function
+                S.weighted = 0;
+                % set input files
+                S.D = char(controls2average);
+                
+                % setup output filename (have to do this despite what grandmean()
+                % documentation says!)
+                if strncmpi(prevStep,'w',1)
+                    S.outfile = ['controls_weighted_grandmean'];
+                else
+                    S.outfile = ['controls_grandmean'];
+                end
+                if strncmpi(prevStep,'wBc',3)
+                    S.outfile = ['controls_weighted_beamformed_grandmean'];
+                elseif strncmpi(prevStep,'Bc',2)
+                    S.outfile = ['controls_beamformed_grandmean'];
+                end
+                % main process
+                fprintf('\nAveraging controls\n');
+                spm_eeg_grandmean_vladedit(S);
+                
+            elseif groups == 2
+                
+                S = [];
+                % parameters for SPM function
+                S.weighted = 0;
+                % set input files
+                S.D = char(patients2average);
+                
+                % setup output filename (have to do this despite what grandmean()
+                % documentation says!)
+                if strncmpi(prevStep,'w',1)
+                    S.outfile = ['patients_weighted_grandmean'];
+                else
+                    S.outfile = ['patients_grandmean'];
+                end
+                if strncmpi(prevStep,'wBc',3)
+                    S.outfile = ['patients_weighted_beamformed_grandmean'];
+                elseif strncmpi(prevStep,'Bc',2)
+                    S.outfile = ['patients_beamformed_grandmean'];
+                end
+                % main process
+                fprintf('\nAveraging patients\n');
+                spm_eeg_grandmean_vladedit(S);
+            end
+        end
+        
+        fprintf('\n\nData grand averaged!\n\n');
+        
+    case 'grand_cropandaverage' % assumes merged files (i.e. one per subject)
+        
+        addpath('/group/language/data/thomascope/vespa/SPM12version/Standalone preprocessing pipeline')
+        % set input files for averaging
+        controls2average = {};
+        patients2average = {};
+        for s=1:size(subjects,2) % for multiple subjects
+            
+            fprintf([ '\n\nCurrent subject = ' subjects{s} '...\n\n' ]);
+            
+            % change to input directory
+            filePath = [pathstem subjects{s}];
+            cd(filePath);
+            
+            % search for input files
+            files = dir(prevStep);
+            
+            fprintf([ '\n\nProcessing ' files.name '...\n\n' ]);
+            
+            % First ensure that only the requested modalities are present
+            % in the file to allow grandmean
+            S.D = files.name;
+            S.channels = p.mod;
+            spm_eeg_crop(S)
+            
+            files.name = ['p' files.name];
             
             if p.group(s) == 1
                 fprintf([ '\nIdentified as a control. \n' ]);
@@ -2320,7 +2411,7 @@ switch step
         
         fprintf('\n\nMEGPLANAR data SPM combined!\n\n');
         
-    
+        
     case 'combineplanar' % combine MEGPLANAR sensor pairs using RMS (if no MEGPLANAR sensors present,the resulting file is identical to the input file but filename is prepended with 'p')
         
         correct = p.correctPlanar;
@@ -2408,7 +2499,7 @@ switch step
         else
             modality = p.mod;
         end
-
+        
         
         for m=1:length(modality) % for multiple modalities
             
@@ -2448,7 +2539,7 @@ switch step
                 end
                 
                 if isfield(p, 'BF') && p.BF == 1
-                   
+                    
                     for bf_src = 1:length(D.chantype)
                         S.channels = D.chanlabels{bf_src};
                         S.prefix = [S.channels '/'];
@@ -2458,7 +2549,7 @@ switch step
                             S.mode = 'time x frequency';
                         end
                         spm_eeg_convert2images(S);
-                
+                        
                         
                     end
                     
@@ -2555,7 +2646,7 @@ switch step
         else
             modality = p.mod;
         end
-
+        
         
         for m=1:length(modality) % for multiple modalities
             
@@ -2599,9 +2690,9 @@ switch step
                     end
                 end
                 
-                       
+                
                 if isfield(p, 'BF') && p.BF == 1 %Not yet implemented lateralised
-                   
+                    
                     for bf_src = 1:length(D.chantype)
                         S.channels = D.chanlabels{bf_src};
                         S.prefix = [S.channels '/'];
@@ -2611,7 +2702,7 @@ switch step
                             S.mode = 'time x frequency';
                         end
                         spm_eeg_convert2images(S);
-                
+                        
                         
                     end
                     
@@ -2740,75 +2831,75 @@ switch step
                     end
                     
                 else
-                
-                
-                cd([pathstem subjects '/' modality{m} foldercomplete.name(1:end-4)])
-                
-                files = dir('condition*.nii');
-                
-                for f=1:length(files)
                     
-                    fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
                     
-                    % set input file
-                    inputFile = files(f).name;
+                    cd([pathstem subjects '/' modality{m} foldercomplete.name(1:end-4)])
                     
-                    % main process
-                    spm_smooth(inputFile,['sm_' inputFile],smooth);
-                    input_images = strvcat(inputFile,['sm_' inputFile]);
-                    spm_imcalc(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],0,'float32'}); % For some unknown reason SPM12 has decided to reverse the order of the last two flags. reinsert NaNs for voxels outside space-time volume
+                    files = dir('condition*.nii');
                     
-                end
-                
-                %                 if strcmp(modality{m},'Source')
-                %
-                %                     % search for input files
-                %                     files = dir(prevStep);
-                %
-                %                     for f=1:length(files)
-                %
-                %                         fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
-                %
-                %                         % set input file
-                %                         inputFile = files(f).name;
-                %
-                %                         % main process
-                %                         spm_smooth(inputFile,['sm_' inputFile],smooth);
-                %                         input_images = strvcat(inputFile,['sm_' inputFile]);
-                %                         spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
-                %
-                %                     end
-                %
-                %                 else
-                %
-                %                     folders = dir('type*');
-                %
-                %                     for fd=1:length(folders)
-                %
-                %                         % change to input directory (image file level)
-                %                         filePath = [pathstem subjects '/' modality{m} '/' folders(fd).name];
-                %                         cd(filePath);
-                %
-                %                         % search for input files
-                %                         files = dir(prevStep);
-                %
-                %                         for f=1:length(files)
-                %
-                %                             fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
-                %
-                %                             % set input file
-                %                             inputFile = files(f).name;
-                %
-                %                             % main process
-                %                             spm_smooth(inputFile,['sm_' inputFile],smooth);
-                %                             input_images = strvcat(inputFile,['sm_' inputFile]);
-                %                             spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
-                %
-                %                         end
-                %
-                %                     end
-                %
-                %                 end
+                    for f=1:length(files)
+                        
+                        fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                        
+                        % set input file
+                        inputFile = files(f).name;
+                        
+                        % main process
+                        spm_smooth(inputFile,['sm_' inputFile],smooth);
+                        input_images = strvcat(inputFile,['sm_' inputFile]);
+                        spm_imcalc(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],0,'float32'}); % For some unknown reason SPM12 has decided to reverse the order of the last two flags. reinsert NaNs for voxels outside space-time volume
+                        
+                    end
+                    
+                    %                 if strcmp(modality{m},'Source')
+                    %
+                    %                     % search for input files
+                    %                     files = dir(prevStep);
+                    %
+                    %                     for f=1:length(files)
+                    %
+                    %                         fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                    %
+                    %                         % set input file
+                    %                         inputFile = files(f).name;
+                    %
+                    %                         % main process
+                    %                         spm_smooth(inputFile,['sm_' inputFile],smooth);
+                    %                         input_images = strvcat(inputFile,['sm_' inputFile]);
+                    %                         spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
+                    %
+                    %                     end
+                    %
+                    %                 else
+                    %
+                    %                     folders = dir('type*');
+                    %
+                    %                     for fd=1:length(folders)
+                    %
+                    %                         % change to input directory (image file level)
+                    %                         filePath = [pathstem subjects '/' modality{m} '/' folders(fd).name];
+                    %                         cd(filePath);
+                    %
+                    %                         % search for input files
+                    %                         files = dir(prevStep);
+                    %
+                    %                         for f=1:length(files)
+                    %
+                    %                             fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                    %
+                    %                             % set input file
+                    %                             inputFile = files(f).name;
+                    %
+                    %                             % main process
+                    %                             spm_smooth(inputFile,['sm_' inputFile],smooth);
+                    %                             input_images = strvcat(inputFile,['sm_' inputFile]);
+                    %                             spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
+                    %
+                    %                         end
+                    %
+                    %                     end
+                    %
+                    %                 end
                 end
             end
             
@@ -2866,106 +2957,106 @@ switch step
                     end
                     
                 else
-                
-                for side = 1:2 % First average each side
-                    if side == 1
-                        cd([pathstem subjects '/left_' modality{m} foldercomplete.name(1:end-4)])
-                    else
-                        cd([pathstem subjects '/right_' modality{m} foldercomplete.name(1:end-4)])
+                    
+                    for side = 1:2 % First average each side
+                        if side == 1
+                            cd([pathstem subjects '/left_' modality{m} foldercomplete.name(1:end-4)])
+                        else
+                            cd([pathstem subjects '/right_' modality{m} foldercomplete.name(1:end-4)])
+                        end
+                        files = dir('condition*.nii');
+                        
+                        for f=1:length(files)
+                            
+                            fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                            
+                            % set input file
+                            inputFile = files(f).name;
+                            
+                            % main process
+                            spm_smooth(inputFile,['sm_' inputFile],smooth);
+                            input_images = strvcat(inputFile,['sm_' inputFile]);
+                            spm_imcalc(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],0,'float32'}); % For some unknown reason SPM12 has decided to reverse the order of the last two flags. reinsert NaNs for voxels outside space-time volume
+                            
+                        end
                     end
-                    files = dir('condition*.nii');
+                    
+                    
+                    % Then create contrast of left - right
                     
                     for f=1:length(files)
-                        
-                        fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                        cd([pathstem subjects])
+                        fprintf([ '\n\Contrasting ' files(f).name '...\n\n' ]);
                         
                         % set input file
                         inputFile = files(f).name;
                         
-                        % main process
+                        % subtract left from right
+                        outfpath = [pathstem subjects '/contrast_' modality{m} foldercomplete.name(1:end-4) '/'];
+                        if ~exist(outfpath,'dir')
+                            mkdir(outfpath);
+                        end
+                        outfname = [outfpath, inputFile]
+                        spm_imcalc(strvcat([pathstem subjects '/left_' modality{m} foldercomplete.name(1:end-4) '/' inputFile], [pathstem subjects '/right_' modality{m} foldercomplete.name(1:end-4) '/' inputFile]), outfname, 'i1 - i2');
+                        
+                        % smooth contrasted image
+                        cd(outfpath)
                         spm_smooth(inputFile,['sm_' inputFile],smooth);
                         input_images = strvcat(inputFile,['sm_' inputFile]);
                         spm_imcalc(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],0,'float32'}); % For some unknown reason SPM12 has decided to reverse the order of the last two flags. reinsert NaNs for voxels outside space-time volume
                         
                     end
-                end
-                
-                
-                % Then create contrast of left - right
-                
-                for f=1:length(files)
-                    cd([pathstem subjects])
-                    fprintf([ '\n\Contrasting ' files(f).name '...\n\n' ]);
                     
-                    % set input file
-                    inputFile = files(f).name;
                     
-                    % subtract left from right
-                    outfpath = [pathstem subjects '/contrast_' modality{m} foldercomplete.name(1:end-4) '/'];
-                    if ~exist(outfpath,'dir')
-                        mkdir(outfpath);
-                    end
-                    outfname = [outfpath, inputFile]
-                    spm_imcalc(strvcat([pathstem subjects '/left_' modality{m} foldercomplete.name(1:end-4) '/' inputFile], [pathstem subjects '/right_' modality{m} foldercomplete.name(1:end-4) '/' inputFile]), outfname, 'i1 - i2');
-                
-                    % smooth contrasted image
-                    cd(outfpath)
-                    spm_smooth(inputFile,['sm_' inputFile],smooth);
-                    input_images = strvcat(inputFile,['sm_' inputFile]);
-                    spm_imcalc(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],0,'float32'}); % For some unknown reason SPM12 has decided to reverse the order of the last two flags. reinsert NaNs for voxels outside space-time volume
-                    
-                end
-                
-                
-                %                 if strcmp(modality{m},'Source')
-                %
-                %                     % search for input files
-                %                     files = dir(prevStep);
-                %
-                %                     for f=1:length(files)
-                %
-                %                         fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
-                %
-                %                         % set input file
-                %                         inputFile = files(f).name;
-                %
-                %                         % main process
-                %                         spm_smooth(inputFile,['sm_' inputFile],smooth);
-                %                         input_images = strvcat(inputFile,['sm_' inputFile]);
-                %                         spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
-                %
-                %                     end
-                %
-                %                 else
-                %
-                %                     folders = dir('type*');
-                %
-                %                     for fd=1:length(folders)
-                %
-                %                         % change to input directory (image file level)
-                %                         filePath = [pathstem subjects '/' modality{m} '/' folders(fd).name];
-                %                         cd(filePath);
-                %
-                %                         % search for input files
-                %                         files = dir(prevStep);
-                %
-                %                         for f=1:length(files)
-                %
-                %                             fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
-                %
-                %                             % set input file
-                %                             inputFile = files(f).name;
-                %
-                %                             % main process
-                %                             spm_smooth(inputFile,['sm_' inputFile],smooth);
-                %                             input_images = strvcat(inputFile,['sm_' inputFile]);
-                %                             spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
-                %
-                %                         end
-                %
-                %                     end
-                %
-                %                 end
+                    %                 if strcmp(modality{m},'Source')
+                    %
+                    %                     % search for input files
+                    %                     files = dir(prevStep);
+                    %
+                    %                     for f=1:length(files)
+                    %
+                    %                         fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                    %
+                    %                         % set input file
+                    %                         inputFile = files(f).name;
+                    %
+                    %                         % main process
+                    %                         spm_smooth(inputFile,['sm_' inputFile],smooth);
+                    %                         input_images = strvcat(inputFile,['sm_' inputFile]);
+                    %                         spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
+                    %
+                    %                     end
+                    %
+                    %                 else
+                    %
+                    %                     folders = dir('type*');
+                    %
+                    %                     for fd=1:length(folders)
+                    %
+                    %                         % change to input directory (image file level)
+                    %                         filePath = [pathstem subjects '/' modality{m} '/' folders(fd).name];
+                    %                         cd(filePath);
+                    %
+                    %                         % search for input files
+                    %                         files = dir(prevStep);
+                    %
+                    %                         for f=1:length(files)
+                    %
+                    %                             fprintf([ '\n\nProcessing ' files(f).name '...\n\n' ]);
+                    %
+                    %                             % set input file
+                    %                             inputFile = files(f).name;
+                    %
+                    %                             % main process
+                    %                             spm_smooth(inputFile,['sm_' inputFile],smooth);
+                    %                             input_images = strvcat(inputFile,['sm_' inputFile]);
+                    %                             spm_imcalc_ui(input_images,['sm_' inputFile],'((i1+eps).*i2)./(i1+eps)',{[],[],'float32',0}); % reinsert NaNs for voxels outside space-time volume
+                    %
+                    %                         end
+                    %
+                    %                     end
+                    %
+                    %                 end
                 end
             end
             
@@ -3059,7 +3150,7 @@ switch step
             else
                 S.timewin = [p.windows(w,1) p.windows(w,2)];
             end
-        
+            
             for m=1:length(modality)
                 
                 fprintf([ '\n\nCurrent imaging modality = ' modality{m} '...\n\n' ]);
@@ -3139,7 +3230,7 @@ switch step
                 
             end
         end
-
+        
         
         fprintf('\n\nMask for image files made!\n\n');
         
