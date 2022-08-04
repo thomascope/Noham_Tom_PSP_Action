@@ -228,6 +228,10 @@ parfor cnt = 1:size(subjects,2)
     PSP_Preprocessing_mainfunction('combineplanar','fmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects{cnt},cnt);
 end
 
+% There seems to be a lot of ringing artefact at the start and end of the
+% epoch, so trim this, and ensure all subjects have the same number of
+% channels (some had extra ECG etc)
+p.croppedtime = [-1500 1500];
 PSP_Preprocessing_mainfunction('grand_cropandaverage','pfmffbdeMtc*.mat',p,pathstem, maxfilteredpathstem, subjects);
 % This saves the grand unweighted average file for each group in the folder of the
 % first member of that group. For convenience, you might want to move them

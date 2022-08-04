@@ -2144,11 +2144,11 @@ switch step
             
             fprintf([ '\n\nProcessing ' files.name '...\n\n' ]);
             
-            if p.group(s) == 1
+            if p.group(s) == 2
                 fprintf([ '\nIdentified as a control. \n' ]);
                 controls2average{end+1} = [filePath '/' files.name];
                 
-            elseif p.group(s) == 2
+            elseif p.group(s) == 1
                 fprintf([ '\nIdentified as a patient. \n' ]);
                 patients2average{end+1} = [filePath '/' files.name];
             end
@@ -2231,15 +2231,18 @@ switch step
             % in the file to allow grandmean
             S.D = files.name;
             S.channels = p.mod;
+            try
+                S.timewin = p.croppedtime;
+            end
             spm_eeg_crop(S)
             
             files.name = ['p' files.name];
             
-            if p.group(s) == 1
+            if p.group(s) == 2
                 fprintf([ '\nIdentified as a control. \n' ]);
                 controls2average{end+1} = [filePath '/' files.name];
                 
-            elseif p.group(s) == 2
+            elseif p.group(s) == 1
                 fprintf([ '\nIdentified as a patient. \n' ]);
                 patients2average{end+1} = [filePath '/' files.name];
             end
